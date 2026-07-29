@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajout de bouteilles dans la cave — version 6</title>
+<style>
+:root{--vin:#6d1f2d;--vin2:#42101a;--rose:#f6e8eb;--texte:#252020;--bord:#d8cec8;--ok:#dff4e7;--err:#ffe0e0;--info:#eaf2ff;--ombre:0 18px 45px #19000666}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:24px;font-family:Arial,Helvetica,sans-serif;color:#fff;background:radial-gradient(55% 42% at 12% 10%,#e793a777,transparent 55%),radial-gradient(48% 38% at 80% 75%,#f4a9bb44,transparent 60%),linear-gradient(140deg,#260207,#570b19 32%,#a13b52 53%,#631427 69%,#180104);background-attachment:fixed}
+.fiche{width:min(1120px,100%);margin:auto;border:1px solid #ffffff55;border-radius:18px;overflow:hidden;box-shadow:var(--ombre);background:linear-gradient(145deg,#4d0b18ee,#85233beb 48%,#3d0712f2)}
+header{padding:22px 26px;background:#330611bb;border-bottom:1px solid #ffffff2b}
+h1{margin:0 0 5px;font-size:clamp(24px,3vw,34px)}
+header p{margin:0;color:#f7dfe5}
+.imports{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.import-bloc{padding:13px;border:1px solid #ffffff35;border-radius:11px;background:#ffffff0e}
+.import-titre{font-size:13px;font-weight:700;margin-bottom:9px}
+.barre{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.statut{flex:1;min-width:180px;padding:10px 12px;border-radius:9px;background:#ffffff18;border:1px solid #ffffff32;font-size:13px;min-height:42px}
+.contenu{padding:24px}
+.grille{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:15px}
+.champ{display:flex;flex-direction:column;gap:6px;min-width:0;position:relative}
+.champ label{font-weight:700;font-size:13px;color:#fff6f7}
+.champ input,.champ select,.champ textarea{width:100%;min-height:44px;border:1px solid var(--bord);border-radius:9px;background:#fff;color:var(--texte);padding:10px 42px 10px 12px;font:inherit;outline:none}
+.champ textarea{min-height:100px;resize:vertical}
+.champ input:focus,.champ select:focus,.champ textarea:focus{border-color:#a84058;box-shadow:0 0 0 3px #f6e8eb}
+.s12{grid-column:span 12}.s8{grid-column:span 8}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}.s3{grid-column:span 3}.s2{grid-column:span 2}
+.ligne-libre{display:none;margin-top:7px}
+.actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #ffffff35}.telechargements{display:none;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;padding:14px;border:1px solid #ffffff35;border-radius:11px;background:#ffffff0d}.telechargements.visible{display:grid}.telechargements .bouton,.telechargements button{width:100%}.nom-fichier{grid-column:1/-1;font-size:12px;color:#f5dce2;line-height:1.45}.resultat-fichier{display:flex;flex-direction:column;gap:8px}.resultat-fichier h3{margin:0;font-size:14px}.resultat-fichier textarea{width:100%;min-height:190px;border:1px solid var(--bord);border-radius:9px;padding:10px;background:#fff;color:#222;font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}.copie-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button,.bouton{min-height:44px;border-radius:9px;border:1px solid #d6cbc6;padding:0 18px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.primaire{background:#fff;color:var(--vin);border-color:#fff}.secondaire{background:#ffffffdf;color:#342c2e}.danger{background:#5b101f;color:#fff;border-color:#9b4154}
+.message{display:none;margin-top:16px;padding:12px 14px;border-radius:9px;color:#231c1d;background:#fff}.message.ok{display:block;background:var(--ok)}.message.erreur{display:block;background:var(--err)}.message.info{display:block;background:var(--info)}
+.aide{font-size:12px;color:#f3dbe0;margin-top:4px}.compact input{padding-left:8px;padding-right:8px}input[type=file]{display:none}.import-bloc select,.import-bloc input[type=number]{min-height:42px;border:1px solid #d8cec8;border-radius:9px;padding:8px 12px;background:#fff;color:#252020;font:inherit}
+.source{grid-column:span 12;border:1px solid #ffffff30;border-radius:10px;padding:12px;background:#ffffff0b}
+.source summary{cursor:pointer;font-weight:700}.source pre{white-space:pre-wrap;color:#fff;background:#21050caa;padding:11px;border-radius:8px;max-height:250px;overflow:auto}
+.efface-champ{position:absolute;right:8px;top:29px;width:28px;height:28px;min-height:28px;padding:0;border-radius:50%;border:1px solid #cdbfc2;background:#f7eef0;color:#6d1f2d;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}.efface-champ:hover{background:#6d1f2d;color:#fff}.champ textarea+.efface-champ{top:30px}.champ .aide{padding-right:4px}
+@media(max-width:850px){.imports{grid-template-columns:1fr}.s2,.s3,.s4,.s5,.s6,.s8{grid-column:span 6}}
+@media(max-width:600px){body{padding:10px}.contenu{padding:17px}header{padding:18px}.grille>*{grid-column:1/-1!important}.actions{flex-direction:column}.actions button,.actions .bouton{width:100%}}
+</style>
+</head>
+<body>
+<main class="fiche">
+<header>
+<h1>Nouvelle bouteille</h1>
+<p>Charger une fiche TXT, corriger les données, choisir le nombre de bouteilles, puis créer les nouveaux fichiers État et Historique.</p>
+<div class="imports">
+  <div class="import-bloc" style="grid-column:1/-1">
+    <div class="import-titre">1. Charger les fichiers nécessaires</div>
+    <div class="aide" style="margin-bottom:10px">Sélectionnez en une seule fois les fichiers disponibles : la fiche TXT du vin, le fichier État CSV et le fichier historique TXT. L’application les reconnaît automatiquement.</div>
+    <div class="barre">
+      <label class="bouton primaire" for="fichiersMultiples">Choisir un ou plusieurs fichiers</label>
+      <input id="fichiersMultiples" type="file" accept=".txt,.csv,text/plain,text/csv" multiple>
+      <div id="fichiersStatut" class="statut">Aucun fichier chargé.</div>
+    </div>
+    <div class="barre" style="margin-top:10px">
+      <div id="txtStatut" class="statut">Fiche TXT du vin : non chargée.</div>
+      <div id="csvStatut" class="statut">Fichier État CSV : non chargé.</div>
+      <div id="historiqueStatut" class="statut">Fichier historique TXT : non chargé.</div>
+    </div>
+  </div>
+  <div class="import-bloc" style="grid-column:1/-1">
+    <div class="import-titre">2. Nombre de bouteilles</div>
+    <div class="barre">
+      <select id="nombreBouteilles" aria-label="Nombre de bouteilles">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        <option value="12">12</option><option value="libre">Libre</option>
+      </select>
+      <input id="nombreLibre" type="number" min="1" step="1" inputmode="numeric" placeholder="Nombre libre" style="display:none;max-width:180px">
+      <div id="nombreStatut" class="statut">1 bouteille = 1 nouvelle ligne.</div>
+    </div>
+  </div>
+</div>
+</header>
+<section class="contenu">
+<form id="wineForm" class="grille" autocomplete="off">
+<div class="champ s12"><label for="propriete">Propriété</label><input id="propriete" data-col="Propriété"></div>
+<div class="champ s12"><label for="nom">Nom *</label><input id="nom" data-col="Nom" required></div>
+<div class="champ s12"><label for="appellation">Appellation</label><input id="appellation" data-col="Appellation"></div>
+<div class="champ s6"><label for="pays">Pays</label><select id="pays" data-col="Pays"><option value=""></option><option>Suisse</option><option>France</option><option>Italie</option><option>Espagne</option><option value="__libre__">Autre pays</option></select><input id="paysLibre" class="ligne-libre" placeholder="Saisir le pays"></div>
+<div class="champ s6"><label for="region">Région</label><input id="region" data-col="Région"></div>
+<div class="champ s3"><label for="annee">Année</label><select id="annee" data-col="Année"><option value=""></option></select></div>
+<div class="champ s4"><label for="couleur">Couleur</label><select id="couleur" data-col="Couleur"><option value=""></option><option value="Vin rouge">Rouge</option><option value="Vin blanc">Blanc</option><option value="Vin rosé">Rosé</option><option value="Spiritueux">Spiritueux</option></select></div>
+<div class="champ s5"><label for="volume">Volume</label><select id="volume" data-col="Volume"><option value=""></option><option value="375mL">0.375</option><option value="500mL">0.5</option><option value="700mL">0.7</option><option value="750mL">0.750</option><option value="1500mL">Magnum</option></select></div>
+<div class="champ s12"><label for="cepages">Cépages</label><input id="cepages" data-col="Cépages"></div>
+<div class="champ s8"><label for="localisation">Localisation</label><input id="localisation" data-col="Localisation" inputmode="numeric" maxlength="3" placeholder="Ex. 145"><div class="aide">Format à 3 chiffres : cave, ligne, casier. Exemple 145 = cave 1, ligne 4, casier 5.</div></div>
+<div class="champ s2 compact"><label for="dateEntree">Date entrée</label><input id="dateEntree" type="date" data-col="Date entrée"></div>
+<div class="champ s2 compact"><label for="prix">Prix</label><input id="prix" type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-col="Prix"><div class="aide">CHF, sans décimale</div></div>
+<div class="champ s12"><label for="commentaire">Commentaire</label><textarea id="commentaire" data-col="Commentaire"></textarea></div>
+<details id="sourceTxt" class="source" style="display:none"><summary>Voir le texte source chargé</summary><pre id="texteSource"></pre></details>
+</form>
+<div id="message" class="message" role="status"></div>
+<div id="telechargements" class="telechargements">
+  <div id="nomsGeneres" class="nom-fichier"></div>
+  <section class="resultat-fichier">
+    <h3 id="titreCSV">Nouvel État CSV</h3>
+    <textarea id="contenuCSV" readonly aria-label="Contenu du nouvel État CSV"></textarea>
+    <div class="copie-actions">
+      <button id="copierCSV" class="primaire" type="button">Copier le contenu CSV</button>
+      <button id="telechargerCSV" class="secondaire" type="button">Télécharger le CSV</button>
+    </div>
+  </section>
+  <section class="resultat-fichier">
+    <h3 id="titreHistorique">Nouvel historique TXT</h3>
+    <textarea id="contenuHistorique" readonly aria-label="Contenu du nouvel historique TXT"></textarea>
+    <div class="copie-actions">
+      <button id="copierHistorique" class="primaire" type="button">Copier l’historique</button>
+      <button id="telechargerHistorique" class="secondaire" type="button">Télécharger le TXT</button>
+    </div>
+  </section>
+</div>
+<div class="actions">
+<button id="effacer" class="danger" type="button">Effacer la fiche</button>
+<button id="verifier" class="secondaire" type="button">Vérifier</button>
+<button id="exporter" class="primaire" type="button">Préparer État et Historique</button>
+</div>
+</section>
+</main>
+<script>
+(()=>{
+'use strict';
+const COLONNES_DEFAUT=['étiquette','Propriété','Nom','Année','Couleur','Pays','Région','Appellation','Cépages','Volume','Localisation','Date entrée','Prix','En cave','Photo_etiquette_devant','Photo_etiquette_derriere','Photo_facture','Date dégustation','Convives','Evénement','Mets','Commentaire'];
+const EXCLUES=new Set(['Date dégustation','Convives','Evénement','Mets']);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const state={
+ colonnes:[...COLONNES_DEFAUT],separateur:';',bomCSV:true,finLigne:'\r\n',
+ csvTexte:'',csvNom:'',historiqueTexte:'',historiqueNom:'',txtNom:'',genCSV:null,genHist:null,nomGenCSV:'',nomGenHist:''
+};
+const form=$('#wineForm'), message=$('#message');
+const normalise=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const afficher=(texte,type='ok')=>{message.textContent=texte;message.className='message '+type};
+const nettoyerMessage=()=>{message.textContent='';message.className='message'};
+
+for(let a=new Date().getFullYear();a>=1900;a--)$('#annee').add(new Option(a,a));
+$('#pays').addEventListener('change',()=>{const libre=$('#pays').value==='__libre__';$('#paysLibre').style.display=libre?'block':'none';if(!libre)$('#paysLibre').value='';sauver()});
+$('#prix').addEventListener('input',e=>{if(e.target.value!=='')e.target.value=Math.trunc(Number(e.target.value))});
+form.addEventListener('input',()=>{sauver();nettoyerMessage()});
+form.addEventListener('change',()=>{sauver();nettoyerMessage()});
+
+function ajouterBoutonsEffacement(){
+ $$('.champ input[data-col],.champ select[data-col],.champ textarea[data-col]').forEach(el=>{
+  const bouton=document.createElement('button');
+  bouton.type='button';bouton.className='efface-champ';bouton.setAttribute('aria-label',`Effacer ${el.dataset.col}`);bouton.title=`Effacer ${el.dataset.col}`;bouton.textContent='×';
+  bouton.addEventListener('click',()=>{
+   if(el.id==='pays'){$('#paysLibre').value='';$('#paysLibre').style.display='none'}
+   el.value='';el.dispatchEvent(new Event('change',{bubbles:true}));el.focus();
+  });
+  el.insertAdjacentElement('afterend',bouton);
+ });
+}
+ajouterBoutonsEffacement();
+
+$('#localisation').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,3)});
+$('#nombreBouteilles').addEventListener('change',()=>{
+ const libre=$('#nombreBouteilles').value==='libre';
+ $('#nombreLibre').style.display=libre?'block':'none';
+ if(!libre)$('#nombreLibre').value='';
+ majNombre();
+});
+$('#nombreLibre').addEventListener('input',majNombre);
+function nombreChoisi(){
+ const v=$('#nombreBouteilles').value;
+ return v==='libre'?Math.max(0,Math.trunc(Number($('#nombreLibre').value)||0)):Number(v);
+}
+function majNombre(){
+ const n=nombreChoisi();
+ $('#nombreStatut').textContent=n>0?`${n} bouteille${n>1?'s':''} = ${n} nouvelle${n>1?'s':''} ligne${n>1?'s':''}.`:'Saisir un nombre supérieur à zéro.';
+}
+
+function valeurNormalisee(cle,valeur){
+ const v=(valeur||'').trim();if(!v||v==='🔴')return '';
+ if(cle==='couleur'){const n=normalise(v);if(n.includes('rouge'))return 'Vin rouge';if(n.includes('blanc'))return 'Vin blanc';if(n.includes('rose'))return 'Vin rosé';if(n.includes('spirit'))return 'Spiritueux'}
+ if(cle==='volume'){
+  const n=normalise(v).replace(/,/g,'.').replace(/\s/g,'');
+  if(/magnum|1\.5l|1500ml/.test(n))return '1500mL';if(/0\.375l|37\.5cl|375ml/.test(n))return '375mL';
+  if(/0\.5l|50cl|500ml/.test(n))return '500mL';if(/0\.7l|70cl|700ml/.test(n))return '700mL';
+  if(/0\.75l|0\.750l|75cl|750ml/.test(n))return '750mL';
+ }
+ return v;
+}
+function extraireBlocFormulaire(texte){
+ const propre=texte.replace(/^\uFEFF/,'').replace(/\r/g,'');
+ const debut=propre.search(/TEXTE\s+[ÀA]\s+COPIER\s+DANS\s+LE\s+FORMULAIRE/i);
+ const segment=debut>=0?propre.slice(debut):propre;const fin=segment.search(/\n\s*CONTR[ÔO]LE\s*\n/i);const bloc=fin>=0?segment.slice(0,fin):segment;
+ const correspondances={'propriete':'propriete','nom':'nom','nom ou cuvee':'nom','appellation':'appellation','pays':'pays','region':'region','annee':'annee','couleur':'couleur','volume':'volume','cepages':'cepages','commentaire':'commentaire','localisation':'localisation','date entree':'dateEntree','prix':'prix'};
+ const data={};bloc.split('\n').forEach(ligne=>{const m=ligne.match(/^\s*([^:]{2,40})\s*:\s*(.*)\s*$/);if(!m)return;const cle=correspondances[normalise(m[1])];if(cle)data[cle]=valeurNormalisee(cle,m[2])});return data;
+}
+function assigner(id,valeur){
+ const el=document.getElementById(id);if(!el||valeur===undefined)return;
+ if(id==='pays'){
+  const options=[...el.options].map(o=>o.value);
+  if(!valeur){el.value='';$('#paysLibre').value='';$('#paysLibre').style.display='none'}
+  else if(options.includes(valeur)){el.value=valeur;$('#paysLibre').value='';$('#paysLibre').style.display='none'}
+  else{el.value='__libre__';$('#paysLibre').value=valeur;$('#paysLibre').style.display='block'}return;
+ }
+ if(id==='annee'&&valeur&&![...el.options].some(o=>o.value===valeur))el.add(new Option(valeur,valeur),1);
+ if((id==='couleur'||id==='volume')&&valeur&&![...el.options].some(o=>o.value===valeur))el.add(new Option(valeur,valeur),1);
+ el.value=valeur;
+}
+
+async function chargerFicheTXT(fichier,texte){
+ const data=extraireBlocFormulaire(texte);
+ if(!Object.keys(data).length)throw new Error(`Le fichier ${fichier.name} ne contient pas de fiche de vin reconnue.`);
+ Object.entries(data).forEach(([id,valeur])=>assigner(id,valeur));
+ state.txtNom=fichier.name;
+ $('#texteSource').textContent=texte.replace(/^\uFEFF/,'');
+ $('#sourceTxt').style.display='block';
+ $('#txtStatut').textContent=`Fiche TXT du vin : ${fichier.name} · ${Object.keys(data).length} champs reconnus`;
+ sauver();
+}
+function detecterSeparateur(texte){const ligne=(texte.replace(/^\uFEFF/,'').split(/\r?\n/).find(Boolean)||'');return [';',',','\t','|'].map(s=>[s,compterHorsGuillemets(ligne,s)]).sort((a,b)=>b[1]-a[1])[0][0]}
+function compterHorsGuillemets(ligne,sep){let n=0,q=false;for(let i=0;i<ligne.length;i++){if(ligne[i]==='"'){if(q&&ligne[i+1]==='"')i++;else q=!q}else if(!q&&ligne[i]===sep)n++}return n}
+function lireLigne(ligne,sep){const out=[];let v='',q=false;for(let i=0;i<ligne.length;i++){const c=ligne[i];if(c==='"'){if(q&&ligne[i+1]==='"'){v+='"';i++}else q=!q}else if(c===sep&&!q){out.push(v);v=''}else v+=c}out.push(v);return out}
+function echapper(v,sep){v=String(v??'');return v.includes(sep)||/["\r\n]/.test(v)||/^\s|\s$/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+async function chargerEtatCSV(fichier){
+ const buf=await fichier.arrayBuffer(),bytes=new Uint8Array(buf);state.bomCSV=bytes[0]===239&&bytes[1]===187&&bytes[2]===191;
+ const brut=new TextDecoder('utf-8').decode(buf),texte=brut.replace(/^\uFEFF/,'');state.finLigne=texte.includes('\r\n')?'\r\n':'\n';
+ const sep=detecterSeparateur(texte),premiere=texte.split(/\r?\n/).find(Boolean)||'',cols=lireLigne(premiere,sep).map(x=>x.trim());
+ if(cols.length<2)throw new Error(`Le fichier ${fichier.name} ne contient pas une ligne d’en-têtes CSV exploitable.`);
+ state.colonnes=cols;state.separateur=sep;state.csvTexte=texte;state.csvNom=fichier.name;
+ $('#csvStatut').textContent=`Fichier État CSV : ${fichier.name} · ${cols.length} colonnes`;
+}
+async function chargerHistoriqueTXT(fichier,texte){
+ state.historiqueTexte=texte.replace(/^\uFEFF/,'');state.historiqueNom=fichier.name;
+ $('#historiqueStatut').textContent=`Fichier historique TXT : ${fichier.name}`;
+}
+function estFicheVin(texte){return /TEXTE\s+À\s+COPIER\s+DANS\s+LE\s+FORMULAIRE/i.test(texte)&&/^\s*(Propriété|Nom)\s*:/im.test(texte)}
+function estHistorique(nom,texte){return /historique/i.test(nom)||/=====\s*AJOUT|Nombre de bouteilles\s*:/i.test(texte)}
+$('#fichiersMultiples').addEventListener('change',async e=>{
+ const fichiers=[...e.target.files];if(!fichiers.length)return;
+ const recus=[],erreurs=[];
+ for(const fichier of fichiers){
+  try{
+   const nom=fichier.name.toLowerCase();
+   if(nom.endsWith('.csv')){await chargerEtatCSV(fichier);recus.push(`État : ${fichier.name}`);continue}
+   if(nom.endsWith('.txt')||fichier.type==='text/plain'){
+    const texte=await fichier.text();
+    if(estFicheVin(texte)){await chargerFicheTXT(fichier,texte);recus.push(`Fiche : ${fichier.name}`)}
+    else if(estHistorique(fichier.name,texte)){await chargerHistoriqueTXT(fichier,texte);recus.push(`Historique : ${fichier.name}`)}
+    else erreurs.push(`${fichier.name} : type TXT non reconnu`);
+    continue;
+   }
+   erreurs.push(`${fichier.name} : format non accepté`);
+  }catch(err){erreurs.push(err.message)}
+ }
+ $('#fichiersStatut').textContent=recus.length?`${recus.length} fichier${recus.length>1?'s':''} reconnu${recus.length>1?'s':''} : ${recus.join(' · ')}`:'Aucun fichier reconnu.';
+ if(erreurs.length)afficher(`Chargement partiel. ${erreurs.join(' ')}`,'erreur');
+ else afficher('Tous les fichiers sélectionnés ont été reconnus et chargés. Les données de la fiche restent modifiables.','ok');
+ e.target.value='';
+});
+
+function valeurChamp(col){
+ if(normalise(col)===normalise('étiquette'))return 'non';if(normalise(col)===normalise('En cave'))return '1';if(EXCLUES.has(col))return '';
+ if(['Photo_etiquette_devant','Photo_etiquette_derriere','Photo_facture'].some(c=>normalise(col)===normalise(c)))return '';
+ const el=$$('[data-col]').find(x=>normalise(x.dataset.col)===normalise(col));if(!el)return '';
+ if(el.id==='pays'&&el.value==='__libre__')return $('#paysLibre').value.trim();
+ if(el.id==='dateEntree'&&el.value){const [y,m,d]=el.value.split('-');return `${d}/${m}/${y}`}
+ if(el.id==='prix'&&el.value!=='')return String(Math.trunc(Number(el.value)));return el.value.trim();
+}
+function verifier(){
+ const erreurs=[];if(!$('#nom').value.trim())erreurs.push('Le champ Nom est obligatoire.');if($('#pays').value==='__libre__'&&!$('#paysLibre').value.trim())erreurs.push('Le pays doit être renseigné.');if($('#prix').value!==''&&Number($('#prix').value)<0)erreurs.push('Le prix ne peut pas être négatif.');
+ if(!/^\d{3}$/.test($('#localisation').value.trim()))erreurs.push('La localisation doit contenir exactement 3 chiffres.');
+ if(nombreChoisi()<1)erreurs.push('Le nombre de bouteilles doit être supérieur à zéro.');
+ if(!state.csvTexte)erreurs.push('Le fichier État CSV doit être chargé.');if(!state.historiqueNom)erreurs.push('Le fichier historique TXT doit être chargé.');
+ if(erreurs.length){afficher(erreurs.join(' '),'erreur');return false}afficher('Contrôle réussi. Les deux nouveaux fichiers peuvent être créés.','ok');return true;
+}
+function dateISOduJour(){
+ const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),j=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${j}`;
+}
+function nomAvecDateEtNumero(nom){
+ const p=nom.lastIndexOf('.'),base=p>=0?nom.slice(0,p):nom,ext=p>=0?nom.slice(p):'';
+ const date=dateISOduJour();
+ const m=base.match(/^(.*?)(?:\d{4}-\d{2}-\d{2})?([^\d]*?)(\d+)([^\d]*)$/);
+ if(m){const suivant=String(Number(m[3])+1).padStart(m[3].length,'0');let prefix=(m[1]+m[2]).replace(/[_\s-]+$/,'');return `${prefix}_${date}_${suivant}${m[4]}${ext}`;}
+ const sansDate=base.replace(/[_-]?\d{4}-\d{2}-\d{2}/g,'').replace(/[_\s-]+$/,'');return `${sansDate}_${date}_001${ext}`;
+}
+function telecharger(contenu,nom,type){
+ const blob=new Blob([contenu],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=nom;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+function ligneCSV(){return state.colonnes.map(c=>echapper(valeurChamp(c),state.separateur)).join(state.separateur)}
+function entreeHistorique(n){
+ const dt=new Date(),date=dt.toLocaleDateString('fr-CH'),heure=dt.toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'});
+ const champs=['Propriété','Nom','Appellation','Année','Couleur','Pays','Région','Cépages','Volume','Localisation','Date entrée','Prix','Commentaire'];
+ const lignes=champs.map(c=>`${c} : ${valeurChamp(c)}`).join('\n');
+ return `\n\n===== AJOUT ${date} ${heure} =====\nNombre de bouteilles : ${n}\n${lignes}\n`;
+}
+function exporter(){
+ if(!verifier())return;const n=nombreChoisi(),eol=state.finLigne||'\r\n',ligne=ligneCSV();
+ let csv=state.csvTexte.replace(/^\uFEFF/,'').replace(/[\r\n]+$/,'');csv+=eol+Array(n).fill(ligne).join(eol)+eol;if(state.bomCSV)csv='\uFEFF'+csv;
+ const hist=entreeHistorique(n)+state.historiqueTexte.replace(/^\s*/,'');
+ state.genCSV=csv;state.genHist=hist;state.nomGenCSV=nomAvecDateEtNumero(state.csvNom);state.nomGenHist=nomAvecDateEtNumero(state.historiqueNom);
+ $('#nomsGeneres').textContent=`Fichiers prêts : ${state.nomGenCSV} et ${state.nomGenHist}. ${n} ligne${n>1?'s':''} ajoutée${n>1?'s':''} à l’État.`;
+ $('#titreCSV').textContent=state.nomGenCSV;$('#titreHistorique').textContent=state.nomGenHist;
+ $('#contenuCSV').value=state.genCSV.replace(/^\uFEFF/,'');$('#contenuHistorique').value=state.genHist;
+ $('#telechargements').classList.add('visible');
+ afficher('Les deux contenus sont prêts. Utilisez Copier le contenu. Le téléchargement reste disponible en option.','ok');
+}
+
+async function copierTexte(texte,nom){
+ if(!texte)return afficher('Préparez d’abord les fichiers.','erreur');
+ try{
+  if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(texte.replace(/^\uFEFF/,''));
+  else{
+   const zone=document.createElement('textarea');zone.value=texte.replace(/^\uFEFF/,'');zone.style.position='fixed';zone.style.opacity='0';document.body.appendChild(zone);zone.select();
+   if(!document.execCommand('copy'))throw new Error('Copie refusée');zone.remove();
+  }
+  afficher(`${nom} a été copié. Créez un nouveau fichier portant ce nom dans Documents, puis collez le contenu.`,'ok');
+ }catch(e){afficher('La copie automatique a été bloquée. Sélectionnez le texte dans la zone puis utilisez Copier.','erreur');}
+}
+function copierCSV(){copierTexte(state.genCSV,state.nomGenCSV)}
+function copierHistorique(){copierTexte(state.genHist,state.nomGenHist)}
+
+function telechargerCSV(){if(!state.genCSV)return afficher('Préparez d’abord les fichiers.','erreur');telecharger(state.genCSV,state.nomGenCSV,'text/csv;charset=utf-8');}
+function telechargerHistorique(){if(!state.genHist)return afficher('Préparez d’abord les fichiers.','erreur');telecharger(state.genHist,state.nomGenHist,'text/plain;charset=utf-8');}
+function sauver(){const data={};$$('[data-col]').forEach(el=>data[el.id]=el.value);data.paysLibre=$('#paysLibre').value;data.nombreBouteilles=$('#nombreBouteilles').value;data.nombreLibre=$('#nombreLibre').value;localStorage.setItem('cave-fiche-txt-v2',JSON.stringify(data))}
+function restaurer(){try{const data=JSON.parse(localStorage.getItem('cave-fiche-txt-v2')||'null');if(!data)return;Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});$('#paysLibre').style.display=$('#pays').value==='__libre__'?'block':'none';$('#nombreLibre').style.display=$('#nombreBouteilles').value==='libre'?'block':'none';majNombre()}catch{}}
+function effacer(){if(!confirm('Effacer toutes les valeurs de la fiche ?'))return;form.reset();$('#paysLibre').value='';$('#paysLibre').style.display='none';$('#sourceTxt').style.display='none';$('#texteSource').textContent='';$('#txtStatut').textContent='Fiche TXT du vin : non chargée.';$('#fichiersStatut').textContent='Aucun fichier chargé.';localStorage.removeItem('cave-fiche-txt-v2');state.genCSV=state.genHist=null;state.nomGenCSV=state.nomGenHist='';$('#telechargements').classList.remove('visible');$('#nomsGeneres').textContent='';$('#contenuCSV').value='';$('#contenuHistorique').value='';nettoyerMessage();$('#nom').focus()}
+$('#verifier').addEventListener('click',verifier);$('#exporter').addEventListener('click',exporter);$('#copierCSV').addEventListener('click',copierCSV);$('#copierHistorique').addEventListener('click',copierHistorique);$('#telechargerCSV').addEventListener('click',telechargerCSV);$('#telechargerHistorique').addEventListener('click',telechargerHistorique);$('#effacer').addEventListener('click',effacer);restaurer();majNombre();
+})();
+</script>
+</body>
+</html>
