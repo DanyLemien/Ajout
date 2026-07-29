@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ajout de bouteilles dans la cave — version 8</title>
+<title>Ajout de bouteilles dans la cave — version 9</title>
 <style>
 :root{--vin:#6d1f2d;--vin2:#42101a;--rose:#f6e8eb;--texte:#252020;--bord:#d8cec8;--ok:#dff4e7;--err:#ffe0e0;--info:#eaf2ff;--ombre:0 18px 45px #19000666}
 *{box-sizing:border-box}
@@ -42,7 +42,7 @@ button,.bouton{min-height:44px;border-radius:9px;border:1px solid #d6cbc6;paddin
 <body>
 <main class="fiche">
 <header>
-<h1>Nouvelle bouteille</h1>
+<h1>Nouvelle bouteille <span style="font-size:.48em;font-weight:700;opacity:.82">Version 9</span></h1>
 <p>Charger une fiche TXT, corriger les données, choisir le nombre de bouteilles, puis créer les nouveaux fichiers État et Historique.</p>
 <div class="imports">
   <div class="import-bloc" style="grid-column:1/-1">
@@ -78,15 +78,14 @@ button,.bouton{min-height:44px;border-radius:9px;border:1px solid #d6cbc6;paddin
 <div class="champ s12" data-mobile-full="1"><label for="propriete">Propriété</label><input id="propriete" data-col="Propriété"></div>
 <div class="champ s12" data-mobile-full="1"><label for="nom">Nom *</label><input id="nom" data-col="Nom" required></div>
 <div class="champ s12" data-mobile-full="1"><label for="appellation">Appellation</label><input id="appellation" data-col="Appellation"></div>
-<div class="champ s6"><label for="pays">Pays</label><select id="pays" data-col="Pays"><option value=""></option><option>Suisse</option><option>France</option><option>Italie</option><option>Espagne</option><option value="__libre__">Autre pays</option></select><input id="paysLibre" class="ligne-libre" placeholder="Saisir le pays"></div>
+<div class="champ s6"><label for="pays">Pays</label><select id="pays" data-col="Pays"><option value="🔴">🔴</option><option>Suisse</option><option>France</option><option>Italie</option><option>Espagne</option><option value="__libre__">Autre pays</option></select><input id="paysLibre" class="ligne-libre" placeholder="Saisir le pays"></div>
 <div class="champ s6"><label for="region">Région</label><input id="region" data-col="Région"></div>
-<div class="champ s3"><label for="annee">Année</label><select id="annee" data-col="Année"><option value=""></option></select></div>
-<div class="champ s4"><label for="couleur">Couleur</label><select id="couleur" data-col="Couleur"><option value=""></option><option value="Vin rouge">Rouge</option><option value="Vin blanc">Blanc</option><option value="Vin rosé">Rosé</option><option value="Spiritueux">Spiritueux</option></select></div>
-<div class="champ s5"><label for="volume">Volume</label><select id="volume" data-col="Volume"><option value=""></option><option value="375mL">0.375</option><option value="500mL">0.5</option><option value="700mL">0.7</option><option value="750mL" selected>0.750</option><option value="1500mL">Magnum</option></select></div>
+<div class="champ s3"><label for="annee">Année</label><select id="annee" data-col="Année"><option value="🔴">🔴</option></select></div>
+<div class="champ s4"><label for="couleur">Couleur</label><select id="couleur" data-col="Couleur"><option value="🔴">🔴</option><option value="Vin rouge">Rouge</option><option value="Vin blanc">Blanc</option><option value="Vin rosé">Rosé</option><option value="Spiritueux">Spiritueux</option></select></div>
+<div class="champ s5"><label for="volume">Volume</label><select id="volume" data-col="Volume"><option value="375mL">0.375</option><option value="500mL">0.5</option><option value="700mL">0.7</option><option value="750mL" selected>0.750</option><option value="1500mL">Magnum</option></select></div>
 <div class="champ s12" data-mobile-full="1"><label for="cepages">Cépages</label><input id="cepages" data-col="Cépages"></div>
-<div class="champ s8"><label for="localisation">Localisation</label><input id="localisation" data-col="Localisation" inputmode="numeric" maxlength="3" placeholder="Ex. 145"><div class="aide">Format à 3 chiffres : cave, ligne, casier. Exemple 145 = cave 1, ligne 4, casier 5.</div></div>
-<input id="dateEntree" type="hidden" data-col="Date entrée">
-<div class="champ s2 compact"><label for="prix">Prix</label><input id="prix" type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-col="Prix"><div class="aide">CHF, sans décimale</div></div>
+<div class="champ s8"><label for="localisation">Localisation</label><input id="localisation" data-col="Localisation" inputmode="text" maxlength="3" value="🔴" placeholder="Ex. 145"><div class="aide">Format à 3 chiffres : cave, ligne, casier. Exemple 145 = cave 1, ligne 4, casier 5.</div></div>
+<div class="champ s2 compact"><label for="prix">Prix</label><input id="prix" type="text" inputmode="numeric" value="🔴" placeholder="🔴" data-col="Prix"><div class="aide">CHF, sans décimale</div></div>
 <div class="champ s12" data-mobile-full="1"><label for="commentaire">Commentaire</label><textarea id="commentaire" data-col="Commentaire"></textarea></div>
 <details id="sourceTxt" class="source" style="display:none"><summary>Voir le texte source chargé</summary><pre id="texteSource"></pre></details>
 </form>
@@ -135,7 +134,7 @@ const nettoyerMessage=()=>{message.textContent='';message.className='message'};
 
 for(let a=new Date().getFullYear();a>=1900;a--)$('#annee').add(new Option(a,a));
 $('#pays').addEventListener('change',()=>{const libre=$('#pays').value==='__libre__';$('#paysLibre').style.display=libre?'block':'none';if(!libre)$('#paysLibre').value='';sauver()});
-$('#prix').addEventListener('input',e=>{if(e.target.value!=='')e.target.value=Math.trunc(Number(e.target.value))});
+$('#prix').addEventListener('input',e=>{const v=e.target.value.trim();if(v==='🔴'||v==='')return;e.target.value=v.replace(/\D/g,'').slice(0,9)});
 form.addEventListener('input',()=>{sauver();nettoyerMessage()});
 form.addEventListener('change',()=>{sauver();nettoyerMessage()});
 
@@ -145,14 +144,14 @@ function ajouterBoutonsEffacement(){
   bouton.type='button';bouton.className='efface-champ';bouton.setAttribute('aria-label',`Effacer ${el.dataset.col}`);bouton.title=`Effacer ${el.dataset.col}`;bouton.textContent='×';
   bouton.addEventListener('click',()=>{
    if(el.id==='pays'){$('#paysLibre').value='';$('#paysLibre').style.display='none'}
-   el.value='';el.dispatchEvent(new Event('change',{bubbles:true}));el.focus();
+   el.value=el.id==='volume'?'750mL':'🔴';el.dispatchEvent(new Event('change',{bubbles:true}));el.focus();
   });
   el.insertAdjacentElement('afterend',bouton);
  });
 }
 ajouterBoutonsEffacement();
 
-$('#localisation').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,3)});
+$('#localisation').addEventListener('input',e=>{const v=e.target.value.trim();if(v==='🔴'||v==='')return;e.target.value=v.replace(/\D/g,'').slice(0,3)});
 $('#nombreBouteilles').addEventListener('change',()=>{
  const libre=$('#nombreBouteilles').value==='libre';
  $('#nombreLibre').style.display=libre?'block':'none';
@@ -184,14 +183,14 @@ function extraireBlocFormulaire(texte){
  const propre=texte.replace(/^\uFEFF/,'').replace(/\r/g,'');
  const debut=propre.search(/TEXTE\s+[ÀA]\s+COPIER\s+DANS\s+LE\s+FORMULAIRE/i);
  const segment=debut>=0?propre.slice(debut):propre;const fin=segment.search(/\n\s*CONTR[ÔO]LE\s*\n/i);const bloc=fin>=0?segment.slice(0,fin):segment;
- const correspondances={'propriete':'propriete','nom':'nom','nom ou cuvee':'nom','appellation':'appellation','pays':'pays','region':'region','annee':'annee','couleur':'couleur','volume':'volume','cepages':'cepages','commentaire':'commentaire','localisation':'localisation','date entree':'dateEntree','prix':'prix'};
+ const correspondances={'propriete':'propriete','nom':'nom','nom ou cuvee':'nom','appellation':'appellation','pays':'pays','region':'region','annee':'annee','couleur':'couleur','volume':'volume','cepages':'cepages','commentaire':'commentaire','localisation':'localisation','prix':'prix'};
  const data={};bloc.split('\n').forEach(ligne=>{const m=ligne.match(/^\s*([^:]{2,40})\s*:\s*(.*)\s*$/);if(!m)return;const cle=correspondances[normalise(m[1])];if(cle)data[cle]=valeurNormalisee(cle,m[2])});return data;
 }
 function assigner(id,valeur){
  const el=document.getElementById(id);if(!el||valeur===undefined)return;
  if(id==='pays'){
   const options=[...el.options].map(o=>o.value);
-  if(!valeur){el.value='';$('#paysLibre').value='';$('#paysLibre').style.display='none'}
+  if(!valeur||valeur==='🔴'){el.value='🔴';$('#paysLibre').value='';$('#paysLibre').style.display='none'}
   else if(options.includes(valeur)){el.value=valeur;$('#paysLibre').value='';$('#paysLibre').style.display='none'}
   else{el.value='__libre__';$('#paysLibre').value=valeur;$('#paysLibre').style.display='block'}return;
  }
@@ -203,11 +202,10 @@ function assigner(id,valeur){
 async function chargerFicheTXT(fichier,texte){
  const data=extraireBlocFormulaire(texte);
  if(!Object.keys(data).length)throw new Error(`Le fichier ${fichier.name} ne contient pas de fiche de vin reconnue.`);
- const champsAttendus=['propriete','nom','appellation','pays','region','annee','couleur','cepages','commentaire'];
+ const champsAttendus=['propriete','nom','appellation','pays','region','annee','couleur','cepages','localisation','prix','commentaire'];
  champsAttendus.forEach(id=>assigner(id,(data[id]||'').trim()||'🔴'));
  assigner('volume',data.volume&&data.volume!=='🔴'?data.volume:'750mL');
- ['localisation','prix'].forEach(id=>{if(data[id]!==undefined)assigner(id,data[id])});
- $('#dateEntree').value=dateISOduJour();
+
  state.txtNom=fichier.name;
  $('#texteSource').textContent=texte.replace(/^\uFEFF/,'');
  $('#sourceTxt').style.display='block';
@@ -256,16 +254,16 @@ $('#fichiersMultiples').addEventListener('change',async e=>{
 });
 
 function valeurChamp(col){
+ if(normalise(col)===normalise('Date entrée')){const [y,m,d]=dateISOduJour().split('-');return `${d}/${m}/${y}`}
  if(normalise(col)===normalise('étiquette'))return 'non';if(normalise(col)===normalise('En cave'))return '1';if(EXCLUES.has(col))return '';
  if(['Photo_etiquette_devant','Photo_etiquette_derriere','Photo_facture'].some(c=>normalise(col)===normalise(c)))return '';
  const el=$$('[data-col]').find(x=>normalise(x.dataset.col)===normalise(col));if(!el)return '';
  if(el.id==='pays'&&el.value==='__libre__')return $('#paysLibre').value.trim();
- if(el.id==='dateEntree'){const iso=el.value||dateISOduJour();const [y,m,d]=iso.split('-');return `${d}/${m}/${y}`}
- if(el.id==='prix'&&el.value!=='')return String(Math.trunc(Number(el.value)));return el.value.trim();
+ if(el.id==='prix'&&el.value!==''&&el.value!=='🔴')return String(Math.trunc(Number(el.value)));return el.value.trim()||'🔴';
 }
 function verifier(){
- const erreurs=[];if(!$('#nom').value.trim())erreurs.push('Le champ Nom est obligatoire.');if($('#pays').value==='__libre__'&&!$('#paysLibre').value.trim())erreurs.push('Le pays doit être renseigné.');if($('#prix').value!==''&&Number($('#prix').value)<0)erreurs.push('Le prix ne peut pas être négatif.');
- if(!/^\d{3}$/.test($('#localisation').value.trim()))erreurs.push('La localisation doit contenir exactement 3 chiffres.');
+ const erreurs=[];if(!$('#nom').value.trim()||$('#nom').value.trim()==='🔴')erreurs.push('Le champ Nom est obligatoire.');if($('#pays').value==='__libre__'&&!$('#paysLibre').value.trim())erreurs.push('Le pays doit être renseigné.');if($('#prix').value.trim()!=='🔴'&&$('#prix').value.trim()!==''&&!/^\d+$/.test($('#prix').value.trim()))erreurs.push('Le prix doit être un entier ou 🔴.');
+ if($('#localisation').value.trim()!=='🔴'&&!/^\d{3}$/.test($('#localisation').value.trim()))erreurs.push('La localisation doit contenir exactement 3 chiffres ou 🔴.');
  if(nombreChoisi()<1)erreurs.push('Le nombre de bouteilles doit être supérieur à zéro.');
  if(!state.csvTexte)erreurs.push('Le fichier État CSV doit être chargé.');if(!state.historiqueNom)erreurs.push('Le fichier historique TXT doit être chargé.');
  if(erreurs.length){afficher(erreurs.join(' '),'erreur');return false}afficher('Contrôle réussi. Les deux nouveaux fichiers peuvent être créés.','ok');return true;
@@ -331,9 +329,9 @@ function confirmerSauvegarde(){
  afficher('Les nouveaux fichiers remplacent maintenant les anciennes références en mémoire. Vous pouvez saisir la bouteille suivante sans les recharger.','ok');
 }
 function sauver(){const data={};$$('[data-col]').forEach(el=>data[el.id]=el.value);data.paysLibre=$('#paysLibre').value;data.nombreBouteilles=$('#nombreBouteilles').value;data.nombreLibre=$('#nombreLibre').value;localStorage.setItem('cave-fiche-txt-v2',JSON.stringify(data))}
-function restaurer(){try{const data=JSON.parse(localStorage.getItem('cave-fiche-txt-v2')||'null');if(data)Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});$('#dateEntree').value=dateISOduJour();if(!$('#volume').value)$('#volume').value='750mL';$('#paysLibre').style.display=$('#pays').value==='__libre__'?'block':'none';$('#nombreLibre').style.display=$('#nombreBouteilles').value==='libre'?'block':'none';majNombre()}catch{$('#dateEntree').value=dateISOduJour();$('#volume').value='750mL'}}
-function effacer(){if(!confirm('Effacer toutes les valeurs de la fiche ?'))return;form.reset();$('#dateEntree').value=dateISOduJour();$('#volume').value='750mL';$('#paysLibre').value='';$('#paysLibre').style.display='none';$('#sourceTxt').style.display='none';$('#texteSource').textContent='';$('#txtStatut').textContent='Fiche TXT du vin : non chargée.';$('#fichiersStatut').textContent='Aucun fichier chargé.';localStorage.removeItem('cave-fiche-txt-v2');state.genCSV=state.genHist=null;state.nomGenCSV=state.nomGenHist='';$('#telechargements').classList.remove('visible');$('#nomsGeneres').textContent='';$('#contenuCSV').value='';$('#contenuHistorique').value='';nettoyerMessage();$('#nom').focus()}
-$('#verifier').addEventListener('click',verifier);$('#exporter').addEventListener('click',exporter);$('#copierCSV').addEventListener('click',copierCSV);$('#copierHistorique').addEventListener('click',copierHistorique);$('#telechargerCSV').addEventListener('click',telechargerCSV);$('#telechargerHistorique').addEventListener('click',telechargerHistorique);$('#confirmerSauvegarde').addEventListener('click',confirmerSauvegarde);$('#effacer').addEventListener('click',effacer);restaurer();majNombre();
+function restaurer(){try{const data=JSON.parse(localStorage.getItem('cave-fiche-txt-v2')||'null');if(data)Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});if(!$('#volume').value)$('#volume').value='750mL';$('#paysLibre').style.display=$('#pays').value==='__libre__'?'block':'none';$('#nombreLibre').style.display=$('#nombreBouteilles').value==='libre'?'block':'none';majNombre()}catch{$('#volume').value='750mL';$('#localisation').value='🔴';$('#prix').value='🔴'}}
+function effacer(){if(!confirm('Effacer toutes les valeurs de la fiche ?'))return;form.reset();$('#volume').value='750mL';$('#localisation').value='🔴';$('#prix').value='🔴';$('#paysLibre').value='';$('#paysLibre').style.display='none';$('#sourceTxt').style.display='none';$('#texteSource').textContent='';$('#txtStatut').textContent='Fiche TXT du vin : non chargée.';$('#fichiersStatut').textContent='Aucun fichier chargé.';localStorage.removeItem('cave-fiche-txt-v2');state.genCSV=state.genHist=null;state.nomGenCSV=state.nomGenHist='';$('#telechargements').classList.remove('visible');$('#nomsGeneres').textContent='';$('#contenuCSV').value='';$('#contenuHistorique').value='';nettoyerMessage();$('#nom').focus()}
+$('#verifier').addEventListener('click',verifier);$('#exporter').addEventListener('click',exporter);$('#copierCSV').addEventListener('click',copierCSV);$('#copierHistorique').addEventListener('click',copierHistorique);$('#telechargerCSV').addEventListener('click',telechargerCSV);$('#telechargerHistorique').addEventListener('click',telechargerHistorique);$('#confirmerSauvegarde').addEventListener('click',confirmerSauvegarde);$('#effacer').addEventListener('click',effacer);restaurer();if(!$('#localisation').value)$('#localisation').value='🔴';if(!$('#prix').value)$('#prix').value='🔴';majNombre();
 })();
 </script>
 </body>
